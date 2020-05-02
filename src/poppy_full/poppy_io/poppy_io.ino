@@ -6,7 +6,7 @@ boolean prevValues[] = {1,1,1,1, 1,1,1,1};
 // Values for each floppy representing it's activation and direction pins
 // -1 = unused
 // 0< = button assigned
-short assigned[] = {0,0,-1,0,-1};
+short assigned[] = {0,0,-1,0,-1,0,-1,0};
 
 void setup(){
  // Multiplexer control pins
@@ -17,6 +17,7 @@ void setup(){
  pinMode(13, INPUT_PULLUP);
  
  Serial.begin(9600);
+ Wire.begin();
 }
 
 void loop(){
@@ -25,15 +26,16 @@ void loop(){
     if (readKey(keyNum)){
       changed = true;
       // Iterate floppys activation pins
-      for (int activationPin = 2; activationPin <= 4; activationPin+=2){
+      for (int activationPin = 2; activationPin <= 6; activationPin+=2){
         // If key is pressed
-        Wire.beginTransmission(4); // transmit to device
         if(values[keyNum] == 0){
           // If floppy not busy
           if (assigned[activationPin] < 0){
             // Send key and activation pin to slave
+            Wire.beginTransmission(4); // transmit to device
             Wire.write(byte(activationPin));
             Wire.write(keyNum);
+            Wire.endTransmission();    // stop transmitting
             // Send to poppy_interface
             Serial.write(char(keyNum));
             // Memorize button
@@ -53,8 +55,10 @@ void loop(){
           // If floppy is busy with current butNum
           if(assigned[activationPin] == keyNum){
             // Send stop signal to slave
-            Wire.write(byte(activationPin));
-            Wire.write(byte(keyNum));
+            Wire.beginTransmission(4); // transmit to device
+            Wire.write(byte(activationPin+100));
+            Wire.write(byte(0));
+            Wire.endTransmission();    // stop transmitting
             // Send to poppy_interface
             Serial.write(char(keyNum+(12*3)));
             //Serial.print("button ");
@@ -69,7 +73,6 @@ void loop(){
             activationPin = 9;
           }
         }
-        Wire.endTransmission();    // stop transmitting
       }
     }
   }

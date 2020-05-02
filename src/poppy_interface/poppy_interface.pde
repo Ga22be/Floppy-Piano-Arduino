@@ -37,7 +37,7 @@ int window_x = 1280;
 int window_y = 720;
 
 // Serial enabled
-boolean serial_on = false;
+boolean serial_on = true;
 
 // Button amount
 int octaves = 3;
